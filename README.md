@@ -53,7 +53,7 @@ Just double-click the HTML file. No installation required.
 
 ---
 
-Made with ❤️ for daily wisdom creators.
+Made with ❤️ for daily wisdom creators. Try it https://pdragonlabs.github.io/Wisdom_batch_gen/
 
 If you find this tool useful, feel free to star the repo or share it with other creators.
 
