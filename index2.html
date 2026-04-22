@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wisdom Batch Manager</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #0a0a1f;
+      color: #fff;
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      max-width: 1100px;
+      margin: auto;
+      background: rgba(20,20,50,0.95);
+      border: 2px solid #00ffff;
+      border-radius: 16px;
+      padding: 25px;
+    }
+    h1 { color: #00ffff; text-align: center; }
+    button {
+      padding: 12px 20px;
+      margin: 8px 4px;
+      background: #00ffff;
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover { background: #00ddff; }
+    .saying {
+      background: rgba(255,255,255,0.06);
+      padding: 18px;
+      margin: 12px 0;
+      border-radius: 12px;
+      border-left: 5px solid #00ffff;
+      position: relative;
+    }
+    .saying input[type="checkbox"] {
+      position: absolute;
+      right: 20px;
+      top: 22px;
+      transform: scale(1.5);
+    }
+    .controls { text-align: center; margin: 20px 0; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Wisdom Batch Manager</h1>
+  <p style="text-align:center;">Generate • Add • Load previous • Save with timestamp</p>
+
+  <div class="controls">
+    <button onclick="generateNewBatch()">Generate New Batch</button>
+    <button onclick="addManualEntry()">+ Add Manual Saying</button>
+    <label style="background:#00ffff; color:#000; padding:12px 20px; border-radius:10px; cursor:pointer; font-weight:bold;">
+      📂 Load JSON
+      <input type="file" id="loadJson" accept=".json" style="display:none" onchange="loadJSON(event)">
+    </label>
+    <button onclick="saveToJSON()">💾 Save Selected as JSON</button>
+  </div>
+
+  <div id="batchContainer"></div>
+</div>
+
+<script>
+  let currentBatch = [];
+
+  function generateNewBatch() {
+    currentBatch = [];
+    const samples = [
+      {text: "The smallest spark of kindness can ignite an eternal flame.", author: "Elder Mira Solene"},
+      {text: "Patience is the quiet bridge between dreams and reality.", author: "Sage Kael Thorn"},
+      {text: "True strength grows in silence, not in noise.", author: "Warrior Lira Voss"},
+      {text: "A gentle word can rewrite the hardest heart.", author: "Healer Elara Moon"},
+      {text: "The roots of greatness are watered by daily discipline.", author: "Master Han Wei"},
+      {text: "Forgiveness is the key that frees both prisoner and jailer.", author: "Priestess Amara Vale"},
+      {text: "Courage is not the absence of fear, but the decision to move anyway.", author: "Captain Rowan Black"},
+      {text: "What you plant today becomes the forest of tomorrow.", author: "Gardener Theo Lang"},
+      {text: "A grateful heart turns ordinary days into blessings.", author: "Grandmother Rose Whitaker"},
+      {text: "The greatest treasures are often hidden in plain sight.", author: "Explorer Silas Reed"}
+    ];
+
+    samples.forEach(sample => {
+      const year = 1700 + Math.floor(Math.random() * 280);
+      const prompt = `Create a beautiful vertical quote card representing "${sample.text}". Soft cinematic lighting, elegant composition. Overlay the exact text "${sample.text}" centered in elegant bold serif font, luminous warm white with subtle golden glow and soft shadow. Below in smaller script: "— ${sample.author}, ${year}". High resolution, clean text rendering, no distortions, inspirational atmosphere.`;
+
+      currentBatch.push({
+        text: sample.text,
+        author: sample.author,
+        year: year,
+        prompt: prompt,
+        checked: false
+      });
+    });
+
+    renderBatch();
+  }
+
+  function addManualEntry() {
+    const text = prompt("Enter the saying text:", "");
+    if (!text) return;
+
+    const author = prompt("Enter author name:", "Unknown Sage");
+    const year = prompt("Enter year:", new Date().getFullYear());
+
+    let promptText = prompt("Paste image prompt (or leave empty for auto):", "");
+    if (!promptText) {
+      promptText = `Create a beautiful vertical quote card for "${text}". Elegant cinematic style. Overlay the exact text "${text}" centered. Attribution: "— ${author}, ${year}". High resolution, clean text.`;
+    }
+
+    currentBatch.push({
+      text: text,
+      author: author,
+      year: year,
+      prompt: promptText,
+      checked: true
+    });
+
+    renderBatch();
+  }
+
+  function renderBatch() {
+    const container = document.getElementById('batchContainer');
+    container.innerHTML = '';
+
+    currentBatch.forEach((item, index) => {
+      const div = document.createElement('div');
+      div.className = 'saying';
+      div.innerHTML = `
+        <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleCheck(${index})">
+        <strong>${index + 1}.</strong> ${item.text}<br>
+        <em>— ${item.author}, ${item.year}</em><br><br>
+        <strong>Image Prompt:</strong><br>
+        <div style="font-size:0.9em; opacity:0.85; margin-top:8px; white-space:pre-wrap;">${item.prompt}</div>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  function toggleCheck(index) {
+    currentBatch[index].checked = !currentBatch[index].checked;
+  }
+
+  function saveToJSON() {
+    if (currentBatch.length === 0) return alert("Nothing to save.");
+
+    const selected = currentBatch.filter(item => item.checked);
+    const toSave = selected.length > 0 ? selected : currentBatch;
+
+    const timestamp = new Date().toISOString().slice(0,19).replace(/[:T]/g, '-');
+
+    const data = {
+      savedDate: new Date().toISOString(),
+      totalSaved: toSave.length,
+      sayings: toSave.map(s => ({
+        text: s.text,
+        author: s.author,
+        year: s.year,
+        fullAttribution: `— ${s.author}, ${s.year}`,
+        imagePrompt: s.prompt
+      }))
+    };
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `wisdom_batch_${timestamp}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    alert(`✅ Saved ${toSave.length} sayings as wisdom_batch_${timestamp}.json`);
+  }
+
+  // ====================== LOAD JSON ======================
+  function loadJSON(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const data = JSON.parse(e.target.result);
+        
+        if (data.sayings && Array.isArray(data.sayings)) {
+          currentBatch = data.sayings.map(s => ({
+            text: s.text,
+            author: s.author || "Unknown",
+            year: s.year || new Date().getFullYear(),
+            prompt: s.imagePrompt || s.prompt,
+            checked: false
+          }));
+          renderBatch();
+          alert(`✅ Loaded ${currentBatch.length} sayings from JSON!`);
+        } else {
+          alert("Invalid JSON format.");
+        }
+      } catch (err) {
+        alert("Error loading JSON file.");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // Initial batch
+  window.onload = generateNewBatch;
+</script>
+</body>
+</html>
