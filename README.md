@@ -1,5 +1,6 @@
 # Wisdom_batch_gen
 cliche sayings of wisdom and imaging
+
 # Wisdom Batch Generator
 
 A simple, clean, and practical tool to generate fresh batches of cliché, timeless wisdom sayings with ready-to-use image prompts for X (Twitter).
@@ -25,7 +26,7 @@ Built for creators who post daily motivational content.
 6. Click **"Save Selected as JSON"** to download your chosen sayings
 
 The saved JSON file will be named like:
-`wisdom_batch_2026-04-21-21-45-12.json`
+`wisdom_batch_2026-04-22-11-20-29.json`
 
 ## Why This Tool?
 
@@ -60,6 +61,7 @@ If you find this tool useful, feel free to star the repo or share it with other 
 ---
 
 **Just say [go]** in the comments if you want me to generate a fresh batch right here.
+you will need an ai hook to generate new ones on the fly... tba fyi
 
 ---
 
